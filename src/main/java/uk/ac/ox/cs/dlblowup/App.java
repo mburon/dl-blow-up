@@ -95,14 +95,17 @@ public class App {
         Collection<Predicate> predicatesWithSideAtoms = guardPredicates.stream()
                 .map(p -> blowUp.getBlownPredicateFromOriginal().get(p)).collect(Collectors.toSet());
 
-        List<Predicate> availableSidePredicates = new ArrayList<>(blowUp.getBlownPredicateFromOriginal().values());
+        List<Predicate> availableSidePredicates = new ArrayList<>();
+        if (Configuration.getReuseOriginalPredicates())
+            availableSidePredicates.addAll(blowUp.getBlownPredicateFromOriginal().values());
+        
         Map<Predicate, List<Predicate>> sidePredicatesMap = new HashMap<>();
         Map<Predicate, List<List<Integer>>> sideTermMappingMap = new HashMap<>();
 
         for (GTGD tgd : blownup) {
             Atom guard = tgd.getGuard();
-            Set<Atom> bodyWithSideAtoms = insertSideAtoms(guard, new HashSet<>(tgd.getBodySet()), predicatesWithSideAtoms,
-                    sidePredicatesMap, sideTermMappingMap, availableSidePredicates);
+            Set<Atom> bodyWithSideAtoms = insertSideAtoms(guard, new HashSet<>(tgd.getBodySet()),
+                    predicatesWithSideAtoms, sidePredicatesMap, sideTermMappingMap, availableSidePredicates);
             Set<Atom> headWithSideAtoms = insertSideAtoms(tgd.getHeadSet(), predicatesWithSideAtoms, sidePredicatesMap,
                     sideTermMappingMap, availableSidePredicates);
             tgdWithSideAtoms.add(new GTGD(bodyWithSideAtoms, headWithSideAtoms));
@@ -141,8 +144,8 @@ public class App {
 
             // insertion of the side atoms
             for (int i = 0; i < sidePredicates.size(); i++) {
-                atoms.add(
-                        Atom.create(sidePredicates.get(i), getMappedTerms(atomWithSide.getTerms(), sideTermMapping.get(i))));
+                atoms.add(Atom.create(sidePredicates.get(i),
+                        getMappedTerms(atomWithSide.getTerms(), sideTermMapping.get(i))));
             }
         }
         return atoms;
@@ -180,7 +183,7 @@ public class App {
         for (int i = 0; i < numberOfSideAtoms; i++) {
             Predicate sidePredicate;
             // flip a count to generate a new predicate or reusing a existing one
-            if (Math.random() > Configuration.getProbabilityOfReusingSidePredicate()) {
+            if (availableSidePredicates.isEmpty() || Math.random() > Configuration.getProbabilityOfReusingSidePredicate()) {
                 sidePredicate = generatePredicate(predicate.getArity());
             } else {
                 Collections.shuffle(availableSidePredicates);
@@ -246,6 +249,15 @@ public class App {
                         .parseDouble(Configuration.prop.getProperty("blow_up.probability_of_reusing_side_predicate"));
             } else {
                 return 0.5;
+            }
+        }
+
+        public static boolean getReuseOriginalPredicates() {
+            if (Configuration.prop.containsKey("blow_up.reuse_original_predicates")) {
+                return Boolean
+                        .parseBoolean(Configuration.prop.getProperty("blow_up.reuse_original_predicates"));
+            } else {
+                return true;
             }
         }
     }

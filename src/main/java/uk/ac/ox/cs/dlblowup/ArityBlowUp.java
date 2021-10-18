@@ -9,6 +9,7 @@ import java.util.Set;
 import uk.ac.ox.cs.dlblowup.App.Configuration;
 import uk.ac.ox.cs.gsat.GTGD;
 import uk.ac.ox.cs.pdq.fol.Atom;
+import uk.ac.ox.cs.pdq.fol.Constant;
 import uk.ac.ox.cs.pdq.fol.Predicate;
 import uk.ac.ox.cs.pdq.fol.Term;
 import uk.ac.ox.cs.pdq.fol.Variable;
@@ -20,7 +21,7 @@ public class ArityBlowUp {
 
     public ArityBlowUp() {
     }
-    
+
     public Map<Predicate, Predicate> getBlownPredicateFromOriginal() {
         return blownPredicateFromOriginal;
     }
@@ -28,11 +29,11 @@ public class ArityBlowUp {
     public GTGD blowUpTGD(GTGD tgd) {
         Set<Atom> blownBody = getBlownAtoms(tgd.getBodySet());
         Set<Atom> blownHead = getBlownAtoms(tgd.getHeadSet());
-            
+
         GTGD blownTgd = new GTGD(blownBody, blownHead);
         return blownTgd;
     }
-    
+
     public Set<Atom> getBlownAtoms(Collection<Atom> atoms) {
         int blowUpSize = Configuration.getBlowUpSize();
         Set<Atom> blownAtoms = new HashSet<>();
@@ -49,8 +50,12 @@ public class ArityBlowUp {
                         count++;
                     }
                 } else {
-                    System.out.println("The constants are not yet supported, but one is encountered in:\n " + atom);
-                    System.exit(1);
+                    Constant constant = (Constant) atom.getTerm(pos);
+                    for (int blownPos = blowUpSize * pos; blownPos < blowUpSize * (pos + 1); blownPos++)
+                        blownterms[blownPos] = constant;
+
+                    //                    System.out.println("The constants are not yet supported, but one is encountered in:\n " + atom);
+                    //System.exit(1);
                 }
             }
             blownAtoms.add(Atom.create(blownPredicate, blownterms));

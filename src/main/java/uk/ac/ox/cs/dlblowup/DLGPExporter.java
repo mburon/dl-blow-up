@@ -29,6 +29,7 @@ import fr.lirmm.graphik.util.Prefix;
 import fr.lirmm.graphik.util.stream.CloseableIterator;
 import fr.lirmm.graphik.util.stream.IteratorException;
 import fr.lirmm.graphik.util.stream.Stream;
+import uk.ac.ox.cs.pdq.fol.Constant;
 import uk.ac.ox.cs.pdq.fol.Dependency;
 import uk.ac.ox.cs.pdq.fol.TGD;
 import uk.ac.ox.cs.pdq.fol.UntypedConstant;
@@ -69,8 +70,9 @@ public class DLGPExporter {
         if (term.isVariable()) {
             return DefaultTermFactory.instance().createVariable(((Variable) term).getSymbol());
         } else {
-            String message = "The type of term "+ term.getClass() +" is not supported: " + term;
-            throw new NotImplementedException(message);
+            return DefaultTermFactory.instance().createConstant(((Constant) term));
+            // String message = "The type of term "+ term.getClass() +" is not supported: " + term;
+            // throw new NotImplementedException(message);
         }
     }
 }
