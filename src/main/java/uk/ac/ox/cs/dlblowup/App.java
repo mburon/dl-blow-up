@@ -111,7 +111,9 @@ public class App {
             tgdWithSideAtoms.add(new GTGD(bodyWithSideAtoms, headWithSideAtoms));
         }
 
-        DLGPExporter.printDLGP(tgdWithSideAtoms, outputStream);
+        Collection<GTGD> permutedTGDs = VariablePermutation.apply(tgdWithSideAtoms, predicatesWithSideAtoms);
+        
+        DLGPExporter.printDLGP(permutedTGDs, outputStream);
     }
 
     private static Set<Atom> insertSideAtoms(Set<Atom> atoms, Collection<Predicate> predicatesWithSideAtoms,
@@ -260,6 +262,25 @@ public class App {
                 return true;
             }
         }
+
+        public static double getTranspositionFactor() {
+            if (Configuration.prop.containsKey("blow_up.transposition_factor")) {
+                return Double
+                        .parseDouble(Configuration.prop.getProperty("blow_up.transposition_factor"));
+            } else {
+                return 0.5;
+            }
+        }
+
+        public static double getTranspositionMaxNumber() {
+            if (Configuration.prop.containsKey("blow_up.transposition_max")) {
+                return Double
+                        .parseDouble(Configuration.prop.getProperty("blow_up.transposition_max"));
+            } else {
+                return 1;
+            }
+        }
+
     }
 
 }
